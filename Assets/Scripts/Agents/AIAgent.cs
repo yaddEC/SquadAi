@@ -15,6 +15,9 @@ namespace FSMMono
         GameObject BulletPrefab;
 
         [SerializeField]
+        GameObject player;
+
+        [SerializeField]
         Slider HPSlider = null;
 
         Transform GunTransform;
@@ -23,6 +26,7 @@ namespace FSMMono
 
         bool IsDead = false;
         int CurrentHP;
+        public int distBetweenPlayerAllie;
 
         private void SetMaterial(Color col)
         {
@@ -56,6 +60,18 @@ namespace FSMMono
         }
         private void Start()
         {
+        }
+        private void Update()
+        {
+            MoveTo(player.transform.position);
+
+            float dist = Vector3.Distance(transform.position, player.transform.position);
+
+            if (dist < distBetweenPlayerAllie)
+            {
+                StopMove();
+            }
+                
         }
         private void OnTriggerEnter(Collider other)
         {

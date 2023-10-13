@@ -15,6 +15,9 @@ namespace FSMMono
         GameObject BulletPrefab;
 
         [SerializeField]
+        GameObject player;
+
+        [SerializeField]
         Slider HPSlider = null;
 
         Transform GunTransform;
@@ -24,6 +27,7 @@ namespace FSMMono
 
         bool IsDead = false;
         int CurrentHP;
+        public int distBetweenPlayerAllie;
 
         private void SetMaterial(Color col)
         {

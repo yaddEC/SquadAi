@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -27,6 +27,7 @@ namespace FSMMono
         Transform GunTransform;
         NavMeshAgent NavMeshAgentInst;
         Material MaterialInst;
+        public UtilityBehavior CurrentBehavior { get; private set; }
 
         [SerializeField]
         float ShootFrequency = 1f;
@@ -45,6 +46,16 @@ namespace FSMMono
         public void SetRedMaterial() { SetMaterial(Color.red); }
         public void SetBlueMaterial() { SetMaterial(Color.blue); }
         public void SetYellowMaterial() { SetMaterial(Color.yellow); }
+
+        public void SetBehavior(UtilityBehavior newBehavior)
+        {
+            if (CurrentBehavior != null && CurrentBehavior != newBehavior)
+            {
+                CurrentBehavior.Reset();
+            }
+
+            CurrentBehavior = newBehavior;
+        }
 
         #region MonoBehaviour
 
@@ -71,6 +82,7 @@ namespace FSMMono
         {
             listEnemies.AddRange(FindObjectsOfType<TurretAgent>());
         }
+
         private void Update()
         {
             foreach(TurretAgent turretagent in listEnemies)
@@ -111,6 +123,14 @@ namespace FSMMono
                 Debug.Log(player.CurrentHP);
 
             }
+            
+        //private void Update()
+        //{
+        //    if(CurrentBehavior == null) return;
+
+        //    CurrentBehavior.UpdateBehavior();
+        // }
+
 
         }
         private void OnTriggerEnter(Collider other)

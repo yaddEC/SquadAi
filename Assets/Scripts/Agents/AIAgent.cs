@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
 
 namespace FSMMono
 {
@@ -15,7 +17,9 @@ namespace FSMMono
         GameObject BulletPrefab;
 
         [SerializeField]
-        GameObject player;
+        PlayerAgent player;
+
+        List<TurretAgent> listEnemies = new List<TurretAgent>();
 
         [SerializeField]
         Slider HPSlider = null;
@@ -23,6 +27,11 @@ namespace FSMMono
         Transform GunTransform;
         NavMeshAgent NavMeshAgentInst;
         Material MaterialInst;
+
+        [SerializeField]
+        float ShootFrequency = 1f;
+
+        float NextShootDate = 0f;
 
         bool IsDead = false;
         int CurrentHP;
@@ -60,18 +69,49 @@ namespace FSMMono
         }
         private void Start()
         {
+            listEnemies.AddRange(FindObjectsOfType<TurretAgent>());
         }
         private void Update()
         {
-            MoveTo(player.transform.position);
-
-            float dist = Vector3.Distance(transform.position, player.transform.position);
-
-            if (dist < distBetweenPlayerAllie)
+            foreach(TurretAgent turretagent in listEnemies)
             {
-                StopMove();
+                if(turretagent.IsShooting && Time.time >= NextShootDate)
+                {
+                    float dist = Vector3.Distance(player.gameObject.transform.position, turretagent.transform.position);
+
+                    // Direction between player and turrets
+                    Vector3 direction = (player.gameObject.transform.position - turretagent.transform.position).normalized;
+
+                    // New Position of agents
+                    Vector3 newPosition = player.gameObject.transform.position - direction * 2;
+
+                    MoveTo(newPosition);
+                    NextShootDate = Time.time + ShootFrequency;
+                    ShootToPosition(turretagent.gameObject.transform.position);
+                }
+                else if (!turretagent.IsShooting)
+                {
+                    FollowPlayer();
+                }
             }
-                
+
+            if(player.CurrentHP < 10)
+            {
+                MoveTo(player.gameObject.transform.position);
+
+                float dist = Vector3.Distance(player.gameObject.transform.position, transform.position);
+
+                Debug.Log(dist);
+
+                if(dist < 1.4)
+                {
+                    player.CurrentHP += 1;
+                }
+
+                Debug.Log(player.CurrentHP);
+
+            }
+
         }
         private void OnTriggerEnter(Collider other)
         {
@@ -90,6 +130,16 @@ namespace FSMMono
         #endregion
 
         #region MoveMethods
+
+        public void FollowPlayer()
+        {
+            MoveTo(player.gameObject.transform.position);
+
+            float dist = Vector3.Distance(transform.position, player.gameObject.transform.position);
+
+            if (dist < distBetweenPlayerAllie)
+                StopMove();
+        }
         public void StopMove()
         {
             NavMeshAgentInst.isStopped = true;
@@ -122,7 +172,7 @@ namespace FSMMono
                 HPSlider.value = CurrentHP;
             }
         }
-        void ShootToPosition(Vector3 pos)
+        public void ShootToPosition(Vector3 pos)
         {
             // look at target position
             transform.LookAt(pos + Vector3.up * transform.position.y);

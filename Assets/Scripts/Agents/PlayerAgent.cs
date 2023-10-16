@@ -25,7 +25,7 @@ public class PlayerAgent : MonoBehaviour, IDamageable
     GameObject NPCTargetCursor = null;
     Transform GunTransform;
     bool IsDead = false;
-    int CurrentHP;
+    public int CurrentHP;
 
     private GameObject GetTargetCursor()
     {

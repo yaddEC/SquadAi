@@ -19,6 +19,7 @@ public class TurretAgent : MonoBehaviour, IDamageable
     Transform GunTransform;
 
     bool IsDead = false;
+    public bool IsShooting = false;
     int CurrentHP;
 
     GameObject Target = null;
@@ -70,6 +71,7 @@ public class TurretAgent : MonoBehaviour, IDamageable
         if (Target == null && other.gameObject.layer == LayerMask.NameToLayer("Allies"))
         {
             Target = other.gameObject;
+            IsShooting = true;
         }
     }
     private void OnTriggerExit(Collider other)
@@ -77,6 +79,7 @@ public class TurretAgent : MonoBehaviour, IDamageable
         if (Target != null && other.gameObject == Target)
         {
             Target = null;
+            IsShooting = false;
         }
     }
 }

@@ -2,6 +2,8 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
+using FSMMono;
+using System.Collections.Generic;
 
 public class SimpleController : MonoBehaviour
 {
@@ -9,6 +11,7 @@ public class SimpleController : MonoBehaviour
     float moveSpeed = 6f;
 
     PlayerAgent Player;
+    public List<AIAgent> listAgent = new List<AIAgent>();
 
 	Camera viewCamera;
 	Vector3 velocity;
@@ -19,9 +22,12 @@ public class SimpleController : MonoBehaviour
     void Start ()
     {
         Player = GetComponent<PlayerAgent>();
-		viewCamera = Camera.main;
+        listAgent.AddRange(FindObjectsOfType<AIAgent>());
+        viewCamera = Camera.main;
 
         OnMouseLeftClicked += Player.ShootToPosition;
+        foreach (var agent in listAgent)
+            OnMouseLeftClicked += agent.ShootToPosition;
         OnMouseRightClicked += Player.NPCShootToPosition;
     }
     void Update ()

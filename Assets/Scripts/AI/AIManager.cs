@@ -7,21 +7,41 @@ using UnityEngine;
 
 public class AIManager : MonoBehaviour
 {
+    public static AIManager Instance { get; private set; }
+
+
     [SerializeField]
-    private List<GameObject> allies;
+    private List<GameObject> _allies;
+
+    public Formation currentFormation { get; set; }
 
     // to avoid updating the AIs every frame, we add a number of n frame, so that the change of behavior is calculated each n frame 
     [SerializeField]
     private int _aiReactionDelay;
     private int _currentFrame;
-    private GameObject _player; 
+    private GameObject _player;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); 
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        currentFormation = Formation.NONE;
+    }
+
     void Start()
     {
         _player = GameObject.FindGameObjectWithTag("Player");
 
         foreach (GameObject ally in GameObject.FindGameObjectsWithTag("AlliesAI"))
         {
-            allies.Add(ally);
+            _allies.Add(ally);
         }
 
     }
@@ -35,7 +55,7 @@ public class AIManager : MonoBehaviour
 
         _currentFrame = 0;
 
-        foreach (GameObject ally in allies)
+        foreach (GameObject ally in _allies)
         {
             UtilityBehavior bestBehavior = GetBestBehavior(ally);
             AIAgent aIAgent = ally.GetComponent<AIAgent>();

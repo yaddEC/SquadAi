@@ -49,12 +49,25 @@ public class PlayerAgent : MonoBehaviour, IDamageable
     }
     public void ShootToPosition(Vector3 pos)
     {
+        Vector3 shootDirection = transform.forward;
+        if (Physics.Raycast(GunTransform.position, shootDirection, Mathf.Infinity, 1 << LayerMask.NameToLayer("Allies")))
+        {
+            return;
+        }
         // instantiate bullet
         if (BulletPrefab)
         {
             GameObject bullet = Instantiate<GameObject>(BulletPrefab, GunTransform.position + transform.forward * 0.5f, Quaternion.identity);
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
             rb.AddForce(transform.forward * BulletPower);
+
+
+            Collider[] allyColliders = Physics.OverlapSphere(bullet.transform.position, 50.0f, 1 << LayerMask.NameToLayer("Allies")); // Assuming a radius of 50 units for overlap check, adjust as needed.
+            Collider bulletCollider = bullet.GetComponent<Collider>();
+            foreach (var allyCollider in allyColliders)
+            {
+                Physics.IgnoreCollision(bulletCollider, allyCollider);
+            }
         }
     }
     public void NPCShootToPosition(Vector3 pos)

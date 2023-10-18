@@ -1,3 +1,4 @@
+using FSMMono;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,7 +6,7 @@ using UnityEngine;
 
 public class IdleBehavior : UtilityBehavior
 {
-    private ProximityToPlayer proximityConsideration;
+    private IdleDelayConsideration _idleDelayConsideration;
 
     [SerializeField]
     private float spinSpeed = 30f; //  (low value = speen/ high value = SPEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEN)
@@ -13,9 +14,10 @@ public class IdleBehavior : UtilityBehavior
     public override void Start()
     {
         // init considerations
-        proximityConsideration = gameObject.AddComponent<ProximityToPlayer>();
+        _idleDelayConsideration = gameObject.AddComponent<IdleDelayConsideration>();
+
         // add to the list
-        Considerations.Add(proximityConsideration);
+        Considerations.Add(_idleDelayConsideration);
     }
 
     public override void UpdateBehavior()

@@ -83,7 +83,7 @@ namespace FSMMono
             listEnemies.AddRange(FindObjectsOfType<TurretAgent>());
         }
 
-        private void Update()
+/*        private void Update()
         {
             foreach(TurretAgent turretagent in listEnemies)
             {
@@ -124,15 +124,16 @@ namespace FSMMono
 
             }
             
-        //private void Update()
-        //{
-        //    if(CurrentBehavior == null) return;
+        
+        }*/
+        private void Update()
+        {
+            if(CurrentBehavior == null) return;
 
-        //    CurrentBehavior.UpdateBehavior();
-        // }
+            CurrentBehavior.UpdateBehavior();
+         }
 
 
-        }
         private void OnTriggerEnter(Collider other)
         {
         }
@@ -153,12 +154,7 @@ namespace FSMMono
 
         public void FollowPlayer()
         {
-            MoveTo(player.gameObject.transform.position);
-
-            float dist = Vector3.Distance(transform.position, player.gameObject.transform.position);
-
-            if (dist < distBetweenPlayerAllie)
-                StopMove();
+            MoveTo(player.gameObject.transform.position + ((gameObject.transform.position-player.transform.position).normalized* distBetweenPlayerAllie)); 
         }
         public void StopMove()
         {
@@ -194,15 +190,28 @@ namespace FSMMono
         }
         public void ShootToPosition(Vector3 pos)
         {
-            // look at target position
             transform.LookAt(pos + Vector3.up * transform.position.y);
+
+            RaycastHit hit;
+            Vector3 shootDirection = transform.forward;
+            if (Physics.Raycast(GunTransform.position, shootDirection, Mathf.Infinity, 1 << LayerMask.NameToLayer("Allies")) )
+            {
+                return;
+            }
 
             // instantiate bullet
             if (BulletPrefab)
             {
-                GameObject bullet = Instantiate<GameObject>(BulletPrefab, GunTransform.position + transform.forward * 0.5f, Quaternion.identity);
+                GameObject bullet = Instantiate<GameObject>(BulletPrefab, GunTransform.position + shootDirection * 0.5f, Quaternion.identity);
                 Rigidbody rb = bullet.GetComponent<Rigidbody>();
-                rb.AddForce(transform.forward * BulletPower);
+                rb.AddForce(shootDirection * BulletPower);
+
+                Collider[] allyColliders = Physics.OverlapSphere(bullet.transform.position, 50.0f, 1 << LayerMask.NameToLayer("Allies")); // Assuming a radius of 50 units for overlap check, adjust as needed.
+                Collider bulletCollider = bullet.GetComponent<Collider>();
+                foreach (var allyCollider in allyColliders)
+                {
+                    Physics.IgnoreCollision(bulletCollider, allyCollider);
+                }
             }
         }
         #endregion

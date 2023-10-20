@@ -42,7 +42,7 @@ public class FormationManager : MonoBehaviour
         switch (AIManager.Instance.currentFormation)
         {
             case Formation.NONE:
-                // no specific formation, followplayerbehavior
+                AssignProtectionAgainstTurret();
                 break;
 
             case Formation.TURTLE:
@@ -62,7 +62,7 @@ public class FormationManager : MonoBehaviour
                 break;
 
             case Formation.FREEZE:
-                // nothing
+                
                 break;
 
             default:
@@ -70,14 +70,72 @@ public class FormationManager : MonoBehaviour
         }
     }
 
-private void OrganizeTurtleFormation()
-{
-    float agentSpacing = 1.5f;
-    float perimeter = agentSpacing * _agentDesiredPositions.Count;
-    float radius = perimeter / (2 * Mathf.PI);
 
-    float angleStep = 360f / _agentDesiredPositions.Count;
-    float currentAngle = 0;
+    private void AssignProtectionAgainstTurret()
+    {
+        float turretDetectionRadius = 10f;
+        List<AIAgent> agents = new List<AIAgent>(_agentDesiredPositions.Keys);
+
+        Collider[] turretsNearPlayer = Physics.OverlapSphere(_player.transform.position, turretDetectionRadius, 1 << LayerMask.NameToLayer("Enemy"));
+
+        // Sort turrets by distance to the player
+        List<Collider> sortedTurrets = new List<Collider>(turretsNearPlayer);
+        sortedTurrets.Sort((a, b) => Vector3.Distance(a.transform.position, _player.transform.position).CompareTo(Vector3.Distance(b.transform.position, _player.transform.position)));
+
+        foreach (var turret in sortedTurrets)
+        {
+            Vector3 directionToTurret = turret.transform.position - _player.transform.position;
+            RaycastHit hit;
+
+            if (Physics.Raycast(_player.transform.position, directionToTurret, out hit))
+            {
+                Debug.DrawLine(_player.transform.position, hit.point, Color.red, 2f);
+
+                if (hit.collider.gameObject.tag == "Enemy")
+                {
+                    Vector3 protectionPosition = Vector3.Lerp(_player.transform.position, turret.transform.position, 0.5f);
+
+                    AIAgent closestAgent = null;
+                    float closestDistance = float.MaxValue;
+                    foreach (var agent in agents)
+                    {
+                        float distance = Vector3.Distance(agent.transform.position, protectionPosition);
+                        if (distance < closestDistance)
+                        {
+                            closestDistance = distance;
+                            closestAgent = agent;
+                        }
+                    }
+
+                    if (closestAgent != null)
+                    {
+                        _agentDesiredPositions[closestAgent] = protectionPosition;
+                        Debug.DrawLine(closestAgent.transform.position, protectionPosition, Color.blue, 2f);
+                        agents.Remove(closestAgent);
+                    }
+                }
+            }
+        }
+    }
+
+    private void DefaultFormation()
+    {
+        List<AIAgent> agents = new List<AIAgent>(_agentDesiredPositions.Keys);
+
+        foreach (var agent in agents)
+        {
+            _agentDesiredPositions[agent] = agent.transform.position;
+        }
+    }
+
+        private void OrganizeTurtleFormation()
+    {
+        float agentSpacing = 1.5f;
+        float perimeter = agentSpacing * _agentDesiredPositions.Count;
+        float radius = perimeter / (2 * Mathf.PI);
+
+        float angleStep = 360f / _agentDesiredPositions.Count;
+        float currentAngle = 0;
 
         List<AIAgent> agents = new List<AIAgent>(_agentDesiredPositions.Keys);
 
@@ -111,7 +169,6 @@ private void OrganizeTurtleFormation()
         float desiredDistanceFromPlayer = 3.0f;
         float agentSpacing = 1.5f;
 
-
         int agentsPerSide = _agentDesiredPositions.Count / 4;
         float totalWidth = agentSpacing * (agentsPerSide - 1);
 
@@ -124,27 +181,39 @@ private void OrganizeTurtleFormation()
         Vector3 startLeft = _player.transform.position - rightOffset - _player.transform.forward * (totalWidth / 2);
 
         List<AIAgent> agents = new List<AIAgent>(_agentDesiredPositions.Keys);
-
         int agentIndex = 0;
 
-        for (int i = 0; i < agentsPerSide; i++)
+        for (int i = 0; i < agentsPerSide && agentIndex < agents.Count; i++)
         {
             _agentDesiredPositions[agents[agentIndex]] = startFront + _player.transform.right * (i * agentSpacing);
             agentIndex++;
         }
-        for (int i = 0; i < agentsPerSide; i++)
+        for (int i = 0; i < agentsPerSide && agentIndex < agents.Count; i++)
         {
             _agentDesiredPositions[agents[agentIndex]] = startRight - _player.transform.forward * (i * agentSpacing);
             agentIndex++;
         }
-        for (int i = 0; i < agentsPerSide; i++)
+        for (int i = 0; i < agentsPerSide && agentIndex < agents.Count; i++)
         {
             _agentDesiredPositions[agents[agentIndex]] = startBack - _player.transform.right * (i * agentSpacing);
             agentIndex++;
         }
-        for (int i = 0; i < agentsPerSide; i++)
+        for (int i = 0; i < agentsPerSide && agentIndex < agents.Count; i++)
         {
             _agentDesiredPositions[agents[agentIndex]] = startLeft + _player.transform.forward * (i * agentSpacing);
+            agentIndex++;
+        }
+
+
+        float circleRadius = desiredDistanceFromPlayer + 2f; 
+        float angleStep = 360f / (agents.Count - agentIndex); 
+        float currentAngle = 0;
+
+        while (agentIndex < agents.Count)
+        {
+            Vector3 offset = new Vector3(Mathf.Sin(currentAngle * Mathf.Deg2Rad), 0, Mathf.Cos(currentAngle * Mathf.Deg2Rad)) * circleRadius;
+            _agentDesiredPositions[agents[agentIndex]] = _player.transform.position + offset;
+            currentAngle += angleStep;
             agentIndex++;
         }
     }

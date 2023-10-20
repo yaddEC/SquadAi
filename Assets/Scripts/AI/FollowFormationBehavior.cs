@@ -4,7 +4,7 @@ using UnityEngine;
 public class FollowFormationBehavior : UtilityBehavior
 {
     private GameObject _player;
-    private ShouldFollowFormation _formationConsideration;
+    private ShouldFollowFormationConsideration _formationConsideration;
     private AIAgent _aiAgent;
 
 
@@ -12,20 +12,19 @@ public class FollowFormationBehavior : UtilityBehavior
     {
         _player = GameObject.FindGameObjectWithTag("Player");
         _aiAgent = gameObject.GetComponent<AIAgent>();
-        _formationConsideration = gameObject.AddComponent<ShouldFollowFormation>();
+        _formationConsideration = gameObject.AddComponent<ShouldFollowFormationConsideration>();
         Considerations.Add(_formationConsideration);
+
 
     }
 
     public override void UpdateBehavior()
     {
+        Debug.Log("Formation");
         Vector3 desiredPosition = FormationManager.Instance.GetDesiredPositionForAgent(_aiAgent);
         _aiAgent.MoveTo(desiredPosition);
     }
 
-    public override void Reset()
-    {
-       
-    }
+
 }
 

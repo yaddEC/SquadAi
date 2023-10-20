@@ -10,6 +10,8 @@ public class SimpleController : MonoBehaviour
     [SerializeField]
     float moveSpeed = 6f;
 
+
+
     PlayerAgent Player;
     public List<AIAgent> listAgent = new List<AIAgent>();
 
@@ -26,8 +28,7 @@ public class SimpleController : MonoBehaviour
         viewCamera = Camera.main;
 
         OnMouseLeftClicked += Player.ShootToPosition;
-        foreach (var agent in listAgent)
-            OnMouseLeftClicked += agent.ShootToPosition;
+
         OnMouseRightClicked += Player.NPCShootToPosition;
     }
     void Update ()
@@ -50,10 +51,19 @@ public class SimpleController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             OnMouseLeftClicked(targetPos);
+
+            if(!Player.GetComponent<PlayerAgent>().isAiCoverShooting() ) 
+            {
+                foreach (var agent in listAgent)
+                    agent.ShootToPosition(targetPos);
+            }
+
         }
         if (Input.GetMouseButtonDown(1))
         {
             OnMouseRightClicked(targetPos);
+            foreach (var agent in listAgent)
+                agent.CoverShot(targetPos);
         }
     }
 	void FixedUpdate()

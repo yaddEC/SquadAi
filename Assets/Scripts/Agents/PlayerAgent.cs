@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PlayerAgent : MonoBehaviour, IDamageable
 {
     [SerializeField]
-    int MaxHP = 100;
+    public int MaxHP = 100;
     [SerializeField]
     float BulletPower = 1000f;
     [SerializeField]
@@ -25,7 +25,7 @@ public class PlayerAgent : MonoBehaviour, IDamageable
     GameObject NPCTargetCursor = null;
     Transform GunTransform;
     bool IsDead = false;
-    public int CurrentHP;
+    public float CurrentHP;
 
     private GameObject GetTargetCursor()
     {
@@ -33,14 +33,21 @@ public class PlayerAgent : MonoBehaviour, IDamageable
             TargetCursor = Instantiate(TargetCursorPrefab);
         return TargetCursor;
     }
-    private GameObject GetNPCTargetCursor()
+    public GameObject GetNPCTargetCursor()
     {
         if (NPCTargetCursor == null)
         {
             NPCTargetCursor = Instantiate(NPCTargetCursorPrefab);
         }
+        else 
+        {
+            Destroy(NPCTargetCursor);
+        }
         return NPCTargetCursor;
     }
+
+    public bool isAiCoverShooting() => NPCTargetCursor != null;
+
     public void AimAtPosition(Vector3 pos)
     {
         GetTargetCursor().transform.position = pos;
@@ -49,10 +56,14 @@ public class PlayerAgent : MonoBehaviour, IDamageable
     }
     public void ShootToPosition(Vector3 pos)
     {
+        RaycastHit hit;
         Vector3 shootDirection = transform.forward;
-        if (Physics.Raycast(GunTransform.position, shootDirection, Mathf.Infinity, 1 << LayerMask.NameToLayer("Allies")))
+        if (Physics.Raycast(GunTransform.position, shootDirection, out hit, Mathf.Infinity))
         {
-            return;
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Allies"))
+            {
+                return;
+            }
         }
         // instantiate bullet
         if (BulletPrefab)
@@ -72,6 +83,7 @@ public class PlayerAgent : MonoBehaviour, IDamageable
     }
     public void NPCShootToPosition(Vector3 pos)
     {
+
         GetNPCTargetCursor().transform.position = pos;
     }
     public void AddDamage(int amount)

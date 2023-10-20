@@ -19,6 +19,8 @@ public class AIManager : MonoBehaviour
     [SerializeField]
     private int _aiReactionDelay;
     private int _currentFrame;
+    [SerializeField]
+    float reloadingTime = 2f;
     private GameObject _player;
 
     private void Awake()
@@ -120,6 +122,8 @@ public class AIManager : MonoBehaviour
         }
 
         return bestBehavior;
+        
+        
     }
 
 }

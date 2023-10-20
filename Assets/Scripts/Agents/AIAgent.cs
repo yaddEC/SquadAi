@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -16,6 +17,9 @@ namespace FSMMono
         [SerializeField]
         GameObject BulletPrefab;
 
+        public bool IsCovering { get; set; } = false;
+        public bool isGunLoaded {get;set;} = true;
+
         [SerializeField]
         PlayerAgent player;
 
@@ -28,6 +32,7 @@ namespace FSMMono
         NavMeshAgent NavMeshAgentInst;
         Material MaterialInst;
         public UtilityBehavior CurrentBehavior { get; private set; }
+        public Vector3 targetPos;
 
         [SerializeField]
         float ShootFrequency = 1f;
@@ -130,6 +135,8 @@ namespace FSMMono
         {
             if(CurrentBehavior == null) return;
 
+            if (IsCovering) ShootToPosition(targetPos);
+
             CurrentBehavior.UpdateBehavior();
          }
 
@@ -188,15 +195,34 @@ namespace FSMMono
                 HPSlider.value = CurrentHP;
             }
         }
+        private IEnumerator ReloadGun()
+        {
+            isGunLoaded = false;
+            yield return new WaitForSeconds(2.0f);
+            isGunLoaded = true;
+        }
+
+        public void CoverShot(Vector3 pos)
+        {
+            targetPos = pos;
+            IsCovering = !IsCovering;
+        }
+
+
         public void ShootToPosition(Vector3 pos)
         {
+            if (!isGunLoaded) return;
+
             transform.LookAt(pos + Vector3.up * transform.position.y);
 
             RaycastHit hit;
             Vector3 shootDirection = transform.forward;
-            if (Physics.Raycast(GunTransform.position, shootDirection, Mathf.Infinity, 1 << LayerMask.NameToLayer("Allies")) )
+            if (Physics.Raycast(GunTransform.position, shootDirection, out hit, Mathf.Infinity))
             {
-                return;
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Allies"))
+                {
+                    return;
+                }
             }
 
             // instantiate bullet
@@ -213,6 +239,8 @@ namespace FSMMono
                     Physics.IgnoreCollision(bulletCollider, allyCollider);
                 }
             }
+
+            StartCoroutine(ReloadGun());
         }
         #endregion
     }

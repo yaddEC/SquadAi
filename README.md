@@ -1,4 +1,4 @@
-﻿**AISquad, Dual Utility Reasoner et Modular Decision Making**
+**AISquad, Dual Utility Reasoner et Modular Decision Making**
 
 de Yann Déchaux et Umut Osmanoglu
 
@@ -19,15 +19,15 @@ Touches alphanumérique de 1 à 6 : Différentes formations
 
 1)Logique principal de l’IA : Il suit le joueur, bloque les tirs ennemis/riposte, et le soigne selon sa vie.
 
-\2) Formation tortue : Les IA forment un cercle autour du joueur afin de le protéger\.
+2) Formation tortue : Les IA forment un cercle autour du joueur afin de le protéger\.
 
-\3) Formation bouclier : Les IA forment une ligne de front, afin de bloquer les tirs venant de devant le joueur,
+3) Formation bouclier : Les IA forment une ligne de front, afin de bloquer les tirs venant de devant le joueur,
 
-\4) Formations “surround” : Les IA s'organisent en carré autour du joueur, qui tourne selon son orientation\.
+4) Formations “surround” : Les IA s'organisent en carré autour du joueur, qui tourne selon son orientation\.
 
-\5) Formation “mouse” : Les IA forment un cercle autour de la souris\.
+5) Formation “mouse” : Les IA forment un cercle autour de la souris\.
 
-\6) Formation “freeze” : Les IA gardent leurs positions actuelles et tirent sur les ennemis/sur la cible de couverture/ à l’endroit où le joueur tire\.
+6) Formation “freeze” : Les IA gardent leurs positions actuelles et tirent sur les ennemis/sur la cible de couverture/ à l’endroit où le joueur tire\.
 
 
 
@@ -63,8 +63,7 @@ Ensuite, dans notre scène, nous avons un AIManager, qui s’occupe de trouver l
 
 La logique généralement utilisée lors du “Dual Utility Reasoning” contient ces 4 étapes : 
 
-`     `-   Éliminez toutes les options avec un poids de 0.
-
+-   Éliminez toutes les options avec un poids de 0.
 - Déterminez la catégorie de rang la plus élevée et éliminez les options avec un rang inférieur.
 - Éliminez les options dont le poids est significativement inférieur à celui de la meilleure option restante.
 - Utilisez une sélection aléatoire pondérée sur les options restantes.

@@ -15,6 +15,8 @@ Clic droit : Tir de soutien des IA
 
 Touches alphanumérique de 1 à 6 : Différentes formations
 
+La molette de la souris (pendant la formation) : change la distance entre joueur et IA.
+
 **II.Formations**
 
 1) Logique principal de l’IA : Il suit le joueur, bloque les tirs ennemis/riposte, et le soigne selon sa vie.

@@ -7,7 +7,7 @@ public class IdleBehavior : UtilityBehavior
     private ShouldNotFollowFormationConsideration _formationConsideration;
 
     [SerializeField]
-    private float spinSpeed = 30f; //  (Low value = speen/ High value = SPEEN!)
+    private float spinSpeed = 30f; //  (Low value = speen / High value = SPEEN!)
 
     public override void Start()
     {
@@ -22,7 +22,7 @@ public class IdleBehavior : UtilityBehavior
 
     public override void UpdateBehavior()
     {
-        // Make the NPC speeeeeeenn when idling(will be replaced by advanced random movment)
+        // Make the NPC speen when idling(will be replaced by advanced random movment)
         gameObject.transform.Rotate(0, spinSpeed * Time.deltaTime, 0);
     }
 

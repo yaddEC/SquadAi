@@ -7,6 +7,7 @@ public class FormationManager : MonoBehaviour
 
     private Dictionary<AIAgent, Vector3> _agentDesiredPositions = new Dictionary<AIAgent, Vector3>();
     private GameObject _player;
+    private float _scrollValue = 0.0f;
 
     private void Awake()
     {
@@ -36,6 +37,18 @@ public class FormationManager : MonoBehaviour
 
     void Update()
     {
+        float scrollInput = Input.GetAxis("Mouse ScrollWheel");
+        _scrollValue += scrollInput;
+
+        if (_scrollValue <= 0f)
+        {
+            _scrollValue = 0f;
+        }
+        if (_scrollValue >= 5f)
+        {
+            _scrollValue = 5f;
+        }
+
         switch (AIManager.Instance.currentFormation)
         {
             case Formation.NONE:
@@ -127,7 +140,7 @@ public class FormationManager : MonoBehaviour
 
     private void OrganizeTurtleFormation()
     {
-        float agentSpacing = 1.5f;
+        float agentSpacing = 1.5f + _scrollValue;
         float perimeter    = agentSpacing * _agentDesiredPositions.Count;
         float radius       = perimeter / (2 * Mathf.PI);
 
@@ -146,8 +159,7 @@ public class FormationManager : MonoBehaviour
 
     private void OrganizeShieldFormation()
     {
-        
-        float desiredDistanceFromPlayer = 5.0f;
+        float desiredDistanceFromPlayer = 5.0f + _scrollValue;
         float agentSpacing              = 1.5f;
         Vector3 shieldCenter            = _player.transform.position + _player.transform.forward * desiredDistanceFromPlayer;
         float totalWidth                = agentSpacing * (_agentDesiredPositions.Count - 1);
@@ -163,7 +175,7 @@ public class FormationManager : MonoBehaviour
 
     private void OrganizeSurroundFormation()
     {
-        float desiredDistanceFromPlayer = 3.0f;
+        float desiredDistanceFromPlayer = 3.0f + _scrollValue;
         float agentSpacing = 1.5f;
 
         int agentsPerSide = _agentDesiredPositions.Count / 4;
@@ -231,7 +243,7 @@ public class FormationManager : MonoBehaviour
             return; // If ray doesnt hit
         }
 
-        float agentSpacing = 1.5f;
+        float agentSpacing = 1.5f + _scrollValue;
         float perimeter = agentSpacing * _agentDesiredPositions.Count;
         float radius = perimeter / (2 * Mathf.PI);
 
@@ -255,6 +267,6 @@ public class FormationManager : MonoBehaviour
         {
             return desiredPosition;
         }
-        return Vector3.zero; //Damn i need to think what should happen if an ai dies too lmao
+        return Vector3.zero;
     }
 }

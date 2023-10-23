@@ -101,12 +101,6 @@ public class ClosestVisibleEnemyFromPlayerConsideration : MonoBehaviour, IConsid
     public Vector3 closestEnemyPosition;
     public float   detectionDistance = 10; 
 
-    private float _evaluationDelay    = 0.5f;
-    private float _lastEvaluationTime = 0f;
-    private float _previousRank       = 0f;
-    private float _bufferDistance     = 0.5f;
-
-
     public void Start()
     {
         _selfAiAgent = gameObject.GetComponent<AIAgent>();

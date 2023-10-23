@@ -11,7 +11,6 @@ public class TurretAgent : MonoBehaviour, IDamageable
     private Transform _gunTransform;
 
     private int        _currentHP;
-    private bool       _isDead = false;
     private GameObject _target = null;
 
     public bool isShooting = false;
@@ -21,7 +20,6 @@ public class TurretAgent : MonoBehaviour, IDamageable
         _currentHP -= amount;
         if (_currentHP <= 0)
         {
-            _isDead = true;
             _currentHP = 0;
 
             gameObject.SetActive(false);

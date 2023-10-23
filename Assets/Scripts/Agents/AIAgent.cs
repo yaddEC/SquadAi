@@ -9,7 +9,6 @@ public class AIAgent : MonoBehaviour, IDamageable
 
     [SerializeField] private int         _maxHP = 100;
     [SerializeField] private float       _bulletPower = 1000f;
-    [SerializeField] private float       _shootFrequency = 1f;
     [SerializeField] private GameObject  _bulletPrefab;
     [SerializeField] private PlayerAgent _player;
     [SerializeField] private Slider      _hpSlider = null;
@@ -26,7 +25,6 @@ public class AIAgent : MonoBehaviour, IDamageable
     public bool isGunLoaded { get; set; } = true;
     public int  distBetweenPlayerAllie;
 
-    private bool _isDead = false;
     private int  _currentHP;
 
     #region Material Methods
@@ -114,7 +112,6 @@ public class AIAgent : MonoBehaviour, IDamageable
         _currentHP -= amount;
         if (_currentHP <= 0)
         {
-            _isDead = true;
             _currentHP = 0;
         }
 

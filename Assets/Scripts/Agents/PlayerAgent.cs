@@ -14,7 +14,6 @@ public class PlayerAgent : MonoBehaviour, IDamageable
     private GameObject _targetCursor = null;
     private GameObject _npcTargetCursor = null;
     private Transform  _gunTransform;
-    private bool       _isDead = false;
 
     public int   maxHP = 100;
     public float currentHP;
@@ -77,15 +76,12 @@ public class PlayerAgent : MonoBehaviour, IDamageable
     public void AddDamage(int amount)
     {
         currentHP -= amount;
+
         if (currentHP <= 0)
-        {
-            _isDead = true;
             currentHP = 0;
-        }
+
         if (_hpSlider != null)
-        {
             _hpSlider.value = currentHP;
-        }
     }
 
     public void MoveToward(Vector3 velocity)

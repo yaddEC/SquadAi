@@ -3,8 +3,7 @@ using UnityEngine;
 
 public class AIManager : MonoBehaviour
 {
-    [SerializeField] private int              _aiReactionDelay; 
-    [SerializeField] private float            _reloadingTime = 2f; 
+    [SerializeField] private int              _aiReactionDelay;
     [SerializeField] private List<GameObject> _allies; 
 
     private int        _currentFrame;

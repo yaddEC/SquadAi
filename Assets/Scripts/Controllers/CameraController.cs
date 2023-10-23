@@ -3,23 +3,26 @@ using System.Collections;
 
 public class CameraController : MonoBehaviour
 {
-	public Transform Target = null;
-	public float Smoothing = 5f;
+    [SerializeField] private Vector3 _offset = new Vector3(0f, 13f, -7f);
 
-    [SerializeField]
-	private Vector3 offset = new Vector3(0f, 13f, -7f);
+	public Transform target    = null;
+	public float     smoothing = 5f;
+
 	void Start ()
 	{
-        if (Target == null)
+        if (target == null)
             return;
-        transform.position = Target.position + offset;
-        transform.LookAt(Target);
+
+        transform.position = target.position + _offset;
+        transform.LookAt(target);
     }
+
 	void FixedUpdate ()
 	{
-        if (Target == null)
+        if (target == null)
             return;
-		Vector3 targetCamPos = Target.position + offset;
-        transform.position = Vector3.Lerp(transform.position, targetCamPos, Smoothing * Time.deltaTime);
+
+		Vector3 targetCamPos = target.position + _offset;
+        transform.position = Vector3.Lerp(transform.position, targetCamPos, smoothing * Time.deltaTime);
     }
 }

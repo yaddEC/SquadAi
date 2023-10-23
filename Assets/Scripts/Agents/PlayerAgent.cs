@@ -1,52 +1,45 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerAgent : MonoBehaviour, IDamageable
 {
-    [SerializeField]
-    public int MaxHP = 100;
-    [SerializeField]
-    float BulletPower = 1000f;
-    [SerializeField]
-    GameObject BulletPrefab;
+    [SerializeField] private float      _bulletPower = 1000f;
+    [SerializeField] private GameObject _bulletPrefab;
 
-    [SerializeField]
-    GameObject TargetCursorPrefab = null;
-    [SerializeField]
-    GameObject NPCTargetCursorPrefab = null;
+    [SerializeField] private GameObject _targetCursorPrefab = null;
+    [SerializeField] private GameObject _npcTargetCursorPrefab = null;
+    [SerializeField] private Slider     _hpSlider = null;
 
-    [SerializeField]
-    Slider HPSlider = null;
+    private Rigidbody  _rb;
+    private GameObject _targetCursor = null;
+    private GameObject _npcTargetCursor = null;
+    private Transform  _gunTransform;
+    private bool       _isDead = false;
 
-    Rigidbody rb;
-    GameObject TargetCursor = null;
-    GameObject NPCTargetCursor = null;
-    Transform GunTransform;
-    bool IsDead = false;
-    public float CurrentHP;
+    public int   maxHP = 100;
+    public float currentHP;
 
     private GameObject GetTargetCursor()
     {
-        if (TargetCursor == null)
-            TargetCursor = Instantiate(TargetCursorPrefab);
-        return TargetCursor;
-    }
-    public GameObject GetNPCTargetCursor()
-    {
-        if (NPCTargetCursor == null)
-        {
-            NPCTargetCursor = Instantiate(NPCTargetCursorPrefab);
-        }
-        else 
-        {
-            Destroy(NPCTargetCursor);
-        }
-        return NPCTargetCursor;
+        if (_targetCursor == null)
+            _targetCursor = Instantiate(_targetCursorPrefab);
+        return _targetCursor;
     }
 
-    public bool isAiCoverShooting() => NPCTargetCursor != null;
+    public GameObject GetNPCTargetCursor()
+    {
+        if (_npcTargetCursor == null)
+        {
+            _npcTargetCursor = Instantiate(_npcTargetCursorPrefab);
+        }
+        else
+        {
+            Destroy(_npcTargetCursor);
+        }
+        return _npcTargetCursor;
+    }
+
+    public bool isAiCoverShooting() => _npcTargetCursor != null;
 
     public void AimAtPosition(Vector3 pos)
     {
@@ -54,74 +47,71 @@ public class PlayerAgent : MonoBehaviour, IDamageable
         if (Vector3.Distance(transform.position, pos) > 2.5f)
             transform.LookAt(pos + Vector3.up * transform.position.y);
     }
+
     public void ShootToPosition(Vector3 pos)
     {
         RaycastHit hit;
         Vector3 shootDirection = transform.forward;
-        if (Physics.Raycast(GunTransform.position, shootDirection, out hit, Mathf.Infinity))
-        {
+        if (Physics.Raycast(_gunTransform.position, shootDirection, out hit, Mathf.Infinity))
             if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Allies"))
-            {
                 return;
-            }
-        }
-        // instantiate bullet
-        if (BulletPrefab)
+
+        if (_bulletPrefab)
         {
-            GameObject bullet = Instantiate<GameObject>(BulletPrefab, GunTransform.position + transform.forward * 0.5f, Quaternion.identity);
+            GameObject bullet = Instantiate<GameObject>(_bulletPrefab, _gunTransform.position + transform.forward * 0.5f, Quaternion.identity);
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
-            rb.AddForce(transform.forward * BulletPower);
+            rb.AddForce(transform.forward * _bulletPower);
 
-
-            Collider[] allyColliders = Physics.OverlapSphere(bullet.transform.position, 50.0f, 1 << LayerMask.NameToLayer("Allies")); // Assuming a radius of 50 units for overlap check, adjust as needed.
+            Collider[] allyColliders = Physics.OverlapSphere(bullet.transform.position, 50.0f, 1 << LayerMask.NameToLayer("Allies"));
             Collider bulletCollider = bullet.GetComponent<Collider>();
             foreach (var allyCollider in allyColliders)
-            {
                 Physics.IgnoreCollision(bulletCollider, allyCollider);
-            }
         }
     }
+
     public void NPCShootToPosition(Vector3 pos)
     {
-
         GetNPCTargetCursor().transform.position = pos;
     }
+
     public void AddDamage(int amount)
     {
-        CurrentHP -= amount;
-        if (CurrentHP <= 0)
+        currentHP -= amount;
+        if (currentHP <= 0)
         {
-            IsDead = true;
-            CurrentHP = 0;
+            _isDead = true;
+            currentHP = 0;
         }
-        if (HPSlider != null)
+        if (_hpSlider != null)
         {
-            HPSlider.value = CurrentHP;
+            _hpSlider.value = currentHP;
         }
     }
+
     public void MoveToward(Vector3 velocity)
     {
-        rb.MovePosition(rb.position + velocity * Time.deltaTime);
+        _rb.MovePosition(_rb.position + velocity * Time.deltaTime);
     }
 
     #region MonoBehaviour Methods
+
     void Start()
     {
-        CurrentHP = MaxHP;
-        GunTransform = transform.Find("Gun");
-        rb = GetComponent<Rigidbody>();
+        currentHP = maxHP;
+        _gunTransform = transform.Find("Gun");
+        _rb = GetComponent<Rigidbody>();
 
-        if (HPSlider != null)
+        if (_hpSlider != null)
         {
-            HPSlider.maxValue = MaxHP;
-            HPSlider.value = CurrentHP;
+            _hpSlider.maxValue = maxHP;
+            _hpSlider.value = currentHP;
         }
     }
-    void Update()
+
+    private void Update()
     {
-        
+        _hpSlider.value = currentHP;
     }
 
     #endregion
-
 }

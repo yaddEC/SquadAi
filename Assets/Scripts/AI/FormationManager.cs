@@ -1,14 +1,11 @@
-using FSMMono;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class FormationManager : MonoBehaviour
 {
     public static FormationManager Instance { get; private set; }
 
     private Dictionary<AIAgent, Vector3> _agentDesiredPositions = new Dictionary<AIAgent, Vector3>();
-    
     private GameObject _player;
 
     private void Awake()
@@ -22,17 +19,17 @@ public class FormationManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-
     }
 
     void Start()
     {
         _player = GameObject.FindGameObjectWithTag("Player");
-        // find all ai allies
+
+        // Find all ai allies
         AIAgent[] agents = FindObjectsOfType<AIAgent>();
         foreach (var agent in agents)
         {
-            // init their pos
+            // Init their pos
             _agentDesiredPositions[agent] = agent.transform.position;
         }
     }
@@ -95,7 +92,7 @@ public class FormationManager : MonoBehaviour
                 {
                     Vector3 protectionPosition = Vector3.Lerp(_player.transform.position, turret.transform.position, 0.5f);
 
-                    AIAgent closestAgent = null;
+                    AIAgent closestAgent  = null;
                     float closestDistance = float.MaxValue;
                     foreach (var agent in agents)
                     {
@@ -128,13 +125,13 @@ public class FormationManager : MonoBehaviour
         }
     }
 
-        private void OrganizeTurtleFormation()
+    private void OrganizeTurtleFormation()
     {
         float agentSpacing = 1.5f;
-        float perimeter = agentSpacing * _agentDesiredPositions.Count;
-        float radius = perimeter / (2 * Mathf.PI);
+        float perimeter    = agentSpacing * _agentDesiredPositions.Count;
+        float radius       = perimeter / (2 * Mathf.PI);
 
-        float angleStep = 360f / _agentDesiredPositions.Count;
+        float angleStep    = 360f / _agentDesiredPositions.Count;
         float currentAngle = 0;
 
         List<AIAgent> agents = new List<AIAgent>(_agentDesiredPositions.Keys);
@@ -151,11 +148,11 @@ public class FormationManager : MonoBehaviour
     {
         
         float desiredDistanceFromPlayer = 5.0f;
-        float agentSpacing = 1.5f;
-        Vector3 shieldCenter = _player.transform.position + _player.transform.forward * desiredDistanceFromPlayer;
-        float totalWidth = agentSpacing * (_agentDesiredPositions.Count - 1);
-        Vector3 startLeft = shieldCenter - _player.transform.right * (totalWidth / 2);
-        List<AIAgent> agents = new List<AIAgent>(_agentDesiredPositions.Keys);
+        float agentSpacing              = 1.5f;
+        Vector3 shieldCenter            = _player.transform.position + _player.transform.forward * desiredDistanceFromPlayer;
+        float totalWidth                = agentSpacing * (_agentDesiredPositions.Count - 1);
+        Vector3 startLeft               = shieldCenter - _player.transform.right * (totalWidth / 2);
+        List<AIAgent> agents            = new List<AIAgent>(_agentDesiredPositions.Keys);
 
         for (int i = 0; i < agents.Count; i++)
         {
@@ -170,15 +167,15 @@ public class FormationManager : MonoBehaviour
         float agentSpacing = 1.5f;
 
         int agentsPerSide = _agentDesiredPositions.Count / 4;
-        float totalWidth = agentSpacing * (agentsPerSide - 1);
+        float totalWidth  = agentSpacing * (agentsPerSide - 1);
 
         Vector3 forwardOffset = _player.transform.forward * desiredDistanceFromPlayer;
-        Vector3 rightOffset = _player.transform.right * desiredDistanceFromPlayer;
+        Vector3 rightOffset   = _player.transform.right * desiredDistanceFromPlayer;
 
         Vector3 startFront = _player.transform.position + forwardOffset - _player.transform.right * (totalWidth / 2);
         Vector3 startRight = _player.transform.position + rightOffset + _player.transform.forward * (totalWidth / 2);
-        Vector3 startBack = _player.transform.position - forwardOffset + _player.transform.right * (totalWidth / 2);
-        Vector3 startLeft = _player.transform.position - rightOffset - _player.transform.forward * (totalWidth / 2);
+        Vector3 startBack  = _player.transform.position - forwardOffset + _player.transform.right * (totalWidth / 2);
+        Vector3 startLeft  = _player.transform.position - rightOffset - _player.transform.forward * (totalWidth / 2);
 
         List<AIAgent> agents = new List<AIAgent>(_agentDesiredPositions.Keys);
         int agentIndex = 0;
@@ -231,7 +228,7 @@ public class FormationManager : MonoBehaviour
         }
         else
         {
-            return; // if ray doesnt hit
+            return; // If ray doesnt hit
         }
 
         float agentSpacing = 1.5f;
@@ -258,6 +255,6 @@ public class FormationManager : MonoBehaviour
         {
             return desiredPosition;
         }
-        return Vector3.zero;//damn i need to think what should happen if an ai dies too lmao
+        return Vector3.zero; //Damn i need to think what should happen if an ai dies too lmao
     }
 }

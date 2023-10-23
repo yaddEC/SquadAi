@@ -1,4 +1,3 @@
-using FSMMono;
 using UnityEngine;
 
 public class HealPlayerBehavior : UtilityBehavior
@@ -12,9 +11,9 @@ public class HealPlayerBehavior : UtilityBehavior
 
     public override void Start()
     {
-        _player = GameObject.FindGameObjectWithTag("Player");
+        _player      = GameObject.FindGameObjectWithTag("Player");
         _playerAgent = _player.GetComponent<PlayerAgent>(); 
-        _aiAgent = gameObject.GetComponent<AIAgent>();
+        _aiAgent     = gameObject.GetComponent<AIAgent>();
 
         _formationConsideration = gameObject.AddComponent<ShouldNotFollowFormationConsideration>();
 
@@ -28,24 +27,14 @@ public class HealPlayerBehavior : UtilityBehavior
     {
         float dist = Vector3.Distance(_player.transform.position, transform.position);
 
-        Debug.Log(dist);
-
-        if (dist < 1.6 && _playerAgent.CurrentHP< _playerAgent.MaxHP)
+        if (dist < 1.6 && _playerAgent.currentHP < _playerAgent.maxHP)
         {
-            _playerAgent.CurrentHP += 0.1f;
+            _playerAgent.currentHP += 1f;
         }
         else 
-        { 
-        
+        {
             _aiAgent.MoveTo(_player.transform.position);
         }
-        
-        
-
-        Debug.Log(_playerAgent.CurrentHP);
-
     }
-
-
 }
 

@@ -3,245 +3,166 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
-using static UnityEngine.GraphicsBuffer;
 
-namespace FSMMono
+public class AIAgent : MonoBehaviour, IDamageable
 {
-    public class AIAgent : MonoBehaviour, IDamageable
+
+    [SerializeField] private int         _maxHP = 100;
+    [SerializeField] private float       _bulletPower = 1000f;
+    [SerializeField] private float       _shootFrequency = 1f;
+    [SerializeField] private GameObject  _bulletPrefab;
+    [SerializeField] private PlayerAgent _player;
+    [SerializeField] private Slider      _hpSlider = null;
+
+    private List<TurretAgent> _listEnemies = new List<TurretAgent>();
+    private Transform         _gunTransform;
+    private NavMeshAgent      _navMeshAgentInst;
+    private Material          _materialInst;
+
+    public UtilityBehavior currentBehavior { get; private set; }
+    public Vector3         targetPos;
+
+    public bool isCovering { get; set; } = false;
+    public bool isGunLoaded { get; set; } = true;
+    public int  distBetweenPlayerAllie;
+
+    private bool _isDead = false;
+    private int  _currentHP;
+
+    #region Material Methods
+
+    private void SetMaterial(Color col) { _materialInst.color = col; }
+    public void SetWhiteMaterial() { SetMaterial(Color.white); }
+    public void SetRedMaterial() { SetMaterial(Color.red); }
+    public void SetBlueMaterial() { SetMaterial(Color.blue); }
+    public void SetYellowMaterial() { SetMaterial(Color.yellow); }
+
+    #endregion
+
+    public void SetBehavior(UtilityBehavior newBehavior)
     {
+        if (currentBehavior != null && currentBehavior != newBehavior)
+            currentBehavior.Reset();
 
-        [SerializeField]
-        int MaxHP = 100;
-        [SerializeField]
-        float BulletPower = 1000f;
-        [SerializeField]
-        GameObject BulletPrefab;
-
-        public bool IsCovering { get; set; } = false;
-        public bool isGunLoaded {get;set;} = true;
-
-        [SerializeField]
-        PlayerAgent player;
-
-        List<TurretAgent> listEnemies = new List<TurretAgent>();
-
-        [SerializeField]
-        Slider HPSlider = null;
-
-        Transform GunTransform;
-        NavMeshAgent NavMeshAgentInst;
-        Material MaterialInst;
-        public UtilityBehavior CurrentBehavior { get; private set; }
-        public Vector3 targetPos;
-
-        [SerializeField]
-        float ShootFrequency = 1f;
-
-        float NextShootDate = 0f;
-
-        bool IsDead = false;
-        int CurrentHP;
-        public int distBetweenPlayerAllie;
-
-        private void SetMaterial(Color col)
-        {
-            MaterialInst.color = col;
-        }
-        public void SetWhiteMaterial() { SetMaterial(Color.white); }
-        public void SetRedMaterial() { SetMaterial(Color.red); }
-        public void SetBlueMaterial() { SetMaterial(Color.blue); }
-        public void SetYellowMaterial() { SetMaterial(Color.yellow); }
-
-        public void SetBehavior(UtilityBehavior newBehavior)
-        {
-            if (CurrentBehavior != null && CurrentBehavior != newBehavior)
-            {
-                CurrentBehavior.Reset();
-            }
-
-            CurrentBehavior = newBehavior;
-        }
-
-        #region MonoBehaviour
-
-        private void Awake()
-        {
-            CurrentHP = MaxHP;
-
-            NavMeshAgentInst = GetComponent<NavMeshAgent>();
-
-            Renderer rend = transform.Find("Body").GetComponent<Renderer>();
-            MaterialInst = rend.material;
-
-            GunTransform = transform.Find("Body/Gun");
-            if (GunTransform == null)
-                Debug.Log("could not fin gun transform");
-
-            if (HPSlider != null)
-            {
-                HPSlider.maxValue = MaxHP;
-                HPSlider.value = CurrentHP;
-            }
-        }
-        private void Start()
-        {
-            listEnemies.AddRange(FindObjectsOfType<TurretAgent>());
-        }
-
-/*        private void Update()
-        {
-            foreach(TurretAgent turretagent in listEnemies)
-            {
-                if(turretagent.IsShooting && Time.time >= NextShootDate)
-                {
-                    float dist = Vector3.Distance(player.gameObject.transform.position, turretagent.transform.position);
-
-                    // Direction between player and turrets
-                    Vector3 direction = (player.gameObject.transform.position - turretagent.transform.position).normalized;
-
-                    // New Position of agents
-                    Vector3 newPosition = player.gameObject.transform.position - direction * 2;
-
-                    MoveTo(newPosition);
-                    NextShootDate = Time.time + ShootFrequency;
-                    ShootToPosition(turretagent.gameObject.transform.position);
-                }
-                else if (!turretagent.IsShooting)
-                {
-                    FollowPlayer();
-                }
-            }
-
-            if(player.CurrentHP < 10)
-            {
-                MoveTo(player.gameObject.transform.position);
-
-                float dist = Vector3.Distance(player.gameObject.transform.position, transform.position);
-
-                Debug.Log(dist);
-
-                if(dist < 1.4)
-                {
-                    player.CurrentHP += 1;
-                }
-
-                Debug.Log(player.CurrentHP);
-
-            }
-            
-        
-        }*/
-        private void Update()
-        {
-            if(CurrentBehavior == null) return;
-
-            if (IsCovering) ShootToPosition(targetPos);
-
-            CurrentBehavior.UpdateBehavior();
-         }
-
-
-        private void OnTriggerEnter(Collider other)
-        {
-        }
-        private void OnTriggerExit(Collider other)
-        {
-        }
-        private void OnDrawGizmos()
-        {
-        }
-
-        #endregion
-
-        #region Perception methods
-
-        #endregion
-
-        #region MoveMethods
-
-        public void FollowPlayer()
-        {
-            MoveTo(player.gameObject.transform.position + ((gameObject.transform.position-player.transform.position).normalized* distBetweenPlayerAllie)); 
-        }
-        public void StopMove()
-        {
-            NavMeshAgentInst.isStopped = true;
-        }
-        public void MoveTo(Vector3 dest)
-        {
-            NavMeshAgentInst.isStopped = false;
-            NavMeshAgentInst.SetDestination(dest);
-        }
-        public bool HasReachedPos()
-        {
-            return NavMeshAgentInst.remainingDistance - NavMeshAgentInst.stoppingDistance <= 0f;
-        }
-
-        #endregion
-
-        #region ActionMethods
-
-        public void AddDamage(int amount)
-        {
-            CurrentHP -= amount;
-            if (CurrentHP <= 0)
-            {
-                IsDead = true;
-                CurrentHP = 0;
-            }
-
-            if (HPSlider != null)
-            {
-                HPSlider.value = CurrentHP;
-            }
-        }
-        private IEnumerator ReloadGun()
-        {
-            isGunLoaded = false;
-            yield return new WaitForSeconds(2.0f);
-            isGunLoaded = true;
-        }
-
-        public void CoverShot(Vector3 pos)
-        {
-            targetPos = pos;
-            IsCovering = !IsCovering;
-        }
-
-
-        public void ShootToPosition(Vector3 pos)
-        {
-            if (!isGunLoaded) return;
-
-            transform.LookAt(pos + Vector3.up * transform.position.y);
-
-            RaycastHit hit;
-            Vector3 shootDirection = transform.forward;
-            if (Physics.Raycast(GunTransform.position, shootDirection, out hit, Mathf.Infinity))
-            {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Allies"))
-                {
-                    return;
-                }
-            }
-
-            // instantiate bullet
-            if (BulletPrefab)
-            {
-                GameObject bullet = Instantiate<GameObject>(BulletPrefab, GunTransform.position + shootDirection * 0.5f, Quaternion.identity);
-                Rigidbody rb = bullet.GetComponent<Rigidbody>();
-                rb.AddForce(shootDirection * BulletPower);
-
-                Collider[] allyColliders = Physics.OverlapSphere(bullet.transform.position, 50.0f, 1 << LayerMask.NameToLayer("Allies")); // Assuming a radius of 50 units for overlap check, adjust as needed.
-                Collider bulletCollider = bullet.GetComponent<Collider>();
-                foreach (var allyCollider in allyColliders)
-                {
-                    Physics.IgnoreCollision(bulletCollider, allyCollider);
-                }
-            }
-
-            StartCoroutine(ReloadGun());
-        }
-        #endregion
+        currentBehavior = newBehavior;
     }
+
+    #region MonoBehaviour
+
+    private void Awake()
+    {
+        _currentHP = _maxHP;
+
+        _navMeshAgentInst = GetComponent<NavMeshAgent>();
+
+        Renderer rend = transform.Find("Body").GetComponent<Renderer>();
+        _materialInst = rend.material;
+
+        _gunTransform = transform.Find("Body/Gun");
+
+        if (_gunTransform == null)
+            Debug.Log("could not find gun transform");
+
+        if (_hpSlider != null)
+        {
+            _hpSlider.maxValue = _maxHP;
+            _hpSlider.value = _currentHP;
+        }
+    }
+    private void Start()
+    {
+        _listEnemies.AddRange(FindObjectsOfType<TurretAgent>());
+    }
+
+    private void Update()
+    {
+        if (currentBehavior == null) return;
+
+        if (isCovering) ShootToPosition(targetPos);
+
+        currentBehavior.UpdateBehavior();
+    }
+
+    #endregion
+
+    #region MoveMethods
+
+    public void FollowPlayer()
+    {
+        MoveTo(_player.gameObject.transform.position + ((gameObject.transform.position - _player.transform.position).normalized * distBetweenPlayerAllie));
+    }
+    public void StopMove()
+    {
+        _navMeshAgentInst.isStopped = true;
+    }
+    public void MoveTo(Vector3 dest)
+    {
+        _navMeshAgentInst.isStopped = false;
+        _navMeshAgentInst.SetDestination(dest);
+    }
+    public bool HasReachedPos()
+    {
+        return _navMeshAgentInst.remainingDistance - _navMeshAgentInst.stoppingDistance <= 0f;
+    }
+
+    #endregion
+
+    #region ActionMethods
+
+    public void AddDamage(int amount)
+    {
+        _currentHP -= amount;
+        if (_currentHP <= 0)
+        {
+            _isDead = true;
+            _currentHP = 0;
+        }
+
+        if (_hpSlider != null)
+            _hpSlider.value = _currentHP;
+    }
+
+    private IEnumerator ReloadGun()
+    {
+        isGunLoaded = false;
+        yield return new WaitForSeconds(2.0f);
+        isGunLoaded = true;
+    }
+
+    public void CoverShot(Vector3 pos)
+    {
+        targetPos  = pos;
+        isCovering = !isCovering;
+    }
+
+    public void ShootToPosition(Vector3 pos)
+    {
+        if (!isGunLoaded) return;
+
+        transform.LookAt(pos + Vector3.up * transform.position.y);
+
+        RaycastHit hit;
+        Vector3 shootDirection = transform.forward;
+        if (Physics.Raycast(_gunTransform.position, shootDirection, out hit, Mathf.Infinity))
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Allies"))
+                return;
+
+        if (_bulletPrefab)
+        {
+            // Instantiates a bullet and fires it to the specified position
+            GameObject bullet = Instantiate<GameObject>(_bulletPrefab, _gunTransform.position + shootDirection * 0.5f, Quaternion.identity);
+            Rigidbody rb = bullet.GetComponent<Rigidbody>();
+            rb.AddForce(shootDirection * _bulletPower);
+
+            Collider[] allyColliders = Physics.OverlapSphere(bullet.transform.position, 50.0f, 1 << LayerMask.NameToLayer("Allies")); // Assuming a radius of 50 units for overlap check, adjust as needed.
+            Collider bulletCollider = bullet.GetComponent<Collider>();
+            foreach (var allyCollider in allyColliders)
+                Physics.IgnoreCollision(bulletCollider, allyCollider);
+        }
+
+        StartCoroutine(ReloadGun());
+    }
+
+    #endregion
 }
+

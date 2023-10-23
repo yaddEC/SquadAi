@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-
 
 public abstract class UtilityBehavior : MonoBehaviour
 {
@@ -11,8 +8,10 @@ public abstract class UtilityBehavior : MonoBehaviour
     public  float GetRank()
     {
         float maxRank = float.MinValue;
+
         foreach (var consideration in Considerations)
             maxRank = Mathf.Max(maxRank, consideration.EvaluateRank());
+
         return maxRank;
     }
 
@@ -20,16 +19,15 @@ public abstract class UtilityBehavior : MonoBehaviour
     {
         float totalBonus = 0;
         float productMultiplier = 1;
+
         foreach (var consideration in Considerations)
         {
             totalBonus += consideration.EvaluateBonus();
             productMultiplier *= consideration.EvaluateMultiplier();
         }
+
         return totalBonus * productMultiplier;
     }
-
-
-
 
     public virtual void Start()
     {

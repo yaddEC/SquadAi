@@ -1,17 +1,16 @@
-using FSMMono;
 using UnityEngine;
 
 public class ShootEnemyBehavior : UtilityBehavior
 {
     private GameObject _player;
-    private ClosestVisibleEnemyConsideration _closestEnemy;
+    private AIAgent    _aiAgent;
     private CanShootConsideration _canShoot;
-    private AIAgent _aiAgent;
+    private ClosestVisibleEnemyConsideration _closestEnemy;
 
 
     public override void Start()
     {
-        _player = GameObject.FindGameObjectWithTag("Player");
+        _player  = GameObject.FindGameObjectWithTag("Player");
         _aiAgent = gameObject.GetComponent<AIAgent>();
 
         _closestEnemy = gameObject.AddComponent<ClosestVisibleEnemyConsideration>();
@@ -19,7 +18,6 @@ public class ShootEnemyBehavior : UtilityBehavior
 
         _canShoot = gameObject.AddComponent<CanShootConsideration>();
         Considerations.Add(_canShoot);
-
     }
 
     public override void UpdateBehavior()
@@ -27,7 +25,5 @@ public class ShootEnemyBehavior : UtilityBehavior
         Vector3 targetPosition = new Vector3(_aiAgent.targetPos.x, 0, _aiAgent.targetPos.z);
         _aiAgent.ShootToPosition(targetPosition);
     }
-
-
 }
 

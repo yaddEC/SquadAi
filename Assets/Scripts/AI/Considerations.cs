@@ -1,8 +1,5 @@
-using FSMMono;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
 public interface IConsideration
 {
@@ -12,10 +9,8 @@ public interface IConsideration
 }
 public class DistanceToPlayerConsideration : MonoBehaviour, IConsideration
 {
-    [SerializeField]
     public float desiredDistance ;
     private GameObject _player;
-
 
     public void Start()
     {
@@ -29,39 +24,34 @@ public class DistanceToPlayerConsideration : MonoBehaviour, IConsideration
         rank = Mathf.Abs(desiredDistance - currentDistance) / desiredDistance;
         return rank+0.1f;
     }
-
-
-
 }
 
 public class ShouldNotFollowFormationConsideration : MonoBehaviour, IConsideration
 {
-
-
     public float EvaluateMultiplier()
     {
         if (AIManager.Instance.currentFormation != Formation.NONE)
             return 0;
+
         return 1;
     }
-
 }
 
 
 public class ClosestVisibleEnemyConsideration : MonoBehaviour, IConsideration
 {
-    private List<GameObject> enemies = new List<GameObject>();
-    public float shootDistance = 11;
-    private float closestDistance ;
+    public  float   shootDistance = 11;
+    private float   closestDistance;
     private AIAgent _selfAiAgent;
+
+    private List<GameObject> _enemies = new List<GameObject>();
 
     public void Start()
     {
         _selfAiAgent = gameObject.GetComponent<AIAgent>();
+
         foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
-        {
-            enemies.Add(enemy);
-        }
+            _enemies.Add(enemy);
     }
 
     public float EvaluateRank()
@@ -71,10 +61,10 @@ public class ClosestVisibleEnemyConsideration : MonoBehaviour, IConsideration
 
         int layerMask = ~LayerMask.GetMask("Allies");
 
-        foreach (var enemy in enemies)
+        foreach (var enemy in _enemies)
         {
             float currentDistance = Vector3.Distance(gameObject.transform.position, enemy.transform.position);
-            Vector3 direction = enemy.transform.position - transform.position;
+            Vector3 direction     = enemy.transform.position - transform.position;
 
             if (Physics.Raycast(transform.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask))
             {
@@ -86,7 +76,7 @@ public class ClosestVisibleEnemyConsideration : MonoBehaviour, IConsideration
             }
         }
 
-        _selfAiAgent.targetPos = (closestShootableEnemy != null && !_selfAiAgent.IsCovering) ? closestShootableEnemy.transform.position : _selfAiAgent.targetPos;
+        _selfAiAgent.targetPos = (closestShootableEnemy != null && !_selfAiAgent.isCovering) ? closestShootableEnemy.transform.position : _selfAiAgent.targetPos;
         float rank = (closestDistance + 0.1f / (shootDistance)) - 1;
         return (closestShootableEnemy == null || rank < 0.2f) ? 0 : rank;
     }
@@ -95,6 +85,7 @@ public class ClosestVisibleEnemyConsideration : MonoBehaviour, IConsideration
     {
         if (EvaluateRank() > 0.8f)
             return 0.2f;
+
         return 0;
     }
 }
@@ -102,17 +93,18 @@ public class ClosestVisibleEnemyConsideration : MonoBehaviour, IConsideration
 public class ClosestVisibleEnemyFromPlayerConsideration : MonoBehaviour, IConsideration
 {
     private List<GameObject> enemies = new List<GameObject>();
-    public float detectionDistance = 10; 
-    private float closestDistance;
-    private AIAgent _selfAiAgent;
-    public Vector3 closestEnemyPosition;
+    private float      _closestDistance;
+    private AIAgent    _selfAiAgent;
     private GameObject _player;
-    private Collider _selfCollider;
+    private Collider   _selfCollider;
 
-    private float evaluationDelay = 0.5f;
-    private float lastEvaluationTime = 0f;
-    private float previousRank = 0f;
-    private float bufferDistance = 0.5f;
+    public Vector3 closestEnemyPosition;
+    public float   detectionDistance = 10; 
+
+    private float _evaluationDelay    = 0.5f;
+    private float _lastEvaluationTime = 0f;
+    private float _previousRank       = 0f;
+    private float _bufferDistance     = 0.5f;
 
 
     public void Start()
@@ -121,26 +113,24 @@ public class ClosestVisibleEnemyFromPlayerConsideration : MonoBehaviour, IConsid
 
         _player = GameObject.FindGameObjectWithTag("Player");
         foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
-        {
             enemies.Add(enemy);
-        }
     }
 
     public float EvaluateRank()
     {
         GameObject closestVisibleEnemy = null;
-        closestDistance = detectionDistance;
+        _closestDistance = detectionDistance;
 
         foreach (var enemy in enemies)
         {
             float currentDistance = Vector3.Distance(_player.transform.position, enemy.transform.position);
-            Vector3 direction = enemy.transform.position - _player.transform.position;
+            Vector3 direction     = enemy.transform.position - _player.transform.position;
 
             if (Physics.Raycast(_player.transform.position, direction, out RaycastHit hit, Mathf.Infinity))
             {
-                if (hit.collider != _selfCollider && hit.collider.gameObject.tag == "Enemy" && currentDistance < detectionDistance && (currentDistance < closestDistance || closestVisibleEnemy == null))
+                if (hit.collider != _selfCollider && hit.collider.gameObject.tag == "Enemy" && currentDistance < detectionDistance && (currentDistance < _closestDistance || closestVisibleEnemy == null))
                 {
-                    closestDistance = currentDistance;
+                    _closestDistance    = currentDistance;
                     closestVisibleEnemy = enemy;
                 }
             }
@@ -148,7 +138,7 @@ public class ClosestVisibleEnemyFromPlayerConsideration : MonoBehaviour, IConsid
 
         closestEnemyPosition = closestVisibleEnemy != null ? closestVisibleEnemy.transform.position : Vector3.zero;
 
-        float rank = (closestDistance + 0.1f) / (detectionDistance) ;
+        float rank = (_closestDistance + 0.1f) / (detectionDistance) ;
         return (closestVisibleEnemy == null || rank < 0.2f) ? 0 : rank;
     }
 
@@ -156,16 +146,16 @@ public class ClosestVisibleEnemyFromPlayerConsideration : MonoBehaviour, IConsid
     {
         if (EvaluateRank() > 0.8f)
             return 1.2f;
+
         return 1;
     }
 }
 
 public class EnemyNearConsideration : MonoBehaviour, IConsideration
 {
-    [SerializeField]
-    private float detectionRadius =7.0f; 
+    [SerializeField] private float _detectionRadius =7.0f; 
     private GameObject _player;
-    Collider[] enemiesNearPlayer;
+    private Collider[] _enemiesNearPlayer;
 
     private void Start()
     {
@@ -174,25 +164,23 @@ public class EnemyNearConsideration : MonoBehaviour, IConsideration
 
     public float EvaluateRank()
     {
-        enemiesNearPlayer = Physics.OverlapSphere(_player.transform.position, detectionRadius, 1 << LayerMask.NameToLayer("Enemy"));
+        _enemiesNearPlayer = Physics.OverlapSphere(_player.transform.position, _detectionRadius, 1 << LayerMask.NameToLayer("Enemy"));
 
-        if (enemiesNearPlayer.Length > 0)
-        {
+        if (_enemiesNearPlayer.Length > 0)
             return 1.0f;
-        }
+
         return 0.0f;
     }
 
     public float EvaluateBonus()
     {
         // increase weight based on number of enemies
-        return 1.05f * enemiesNearPlayer.Length;
+        return 1.05f * _enemiesNearPlayer.Length;
     }
 }
 
 public class CanShootConsideration : MonoBehaviour, IConsideration
 {
-    
     private AIAgent _selfAiAgent;
 
     public void Start()
@@ -200,27 +188,23 @@ public class CanShootConsideration : MonoBehaviour, IConsideration
         _selfAiAgent = gameObject.GetComponent<AIAgent>();
     }
 
-        public float EvaluateMultiplier()
+    public float EvaluateMultiplier()
     {
-            if (!_selfAiAgent.isGunLoaded || _selfAiAgent.IsCovering ||( AIManager.Instance.currentFormation != Formation.NONE && AIManager.Instance.currentFormation != Formation.FREEZE))
-               return 0;
-            else
-                return 1;
-     
+        if (!_selfAiAgent.isGunLoaded || _selfAiAgent.isCovering ||( AIManager.Instance.currentFormation != Formation.NONE && AIManager.Instance.currentFormation != Formation.FREEZE))
+            return 0;
+        else
+            return 1;
     }
-
 }
 
 public class IdleDelayConsideration : MonoBehaviour, IConsideration
 {
-    [SerializeField]
-    private float idleDelay = 2.0f;  
+    [SerializeField] private float idleDelay = 2.0f;  
 
-    private float timeWhenStopped;
-    private bool hasStopped;
-    private Vector3 lastCheckedPosition;
-    private float moveThreshold = 0.1f;
-
+    private float   _moveThreshold = 0.1f;
+    private float   _timeWhenStopped;
+    private bool    _hasStopped;
+    private Vector3 _lastCheckedPosition;
     private AIAgent _selfAiAgent;
 
     public void Start()
@@ -230,27 +214,23 @@ public class IdleDelayConsideration : MonoBehaviour, IConsideration
 
     public float EvaluateRank()
     {
-        float currentDistance = Vector3.Distance(gameObject.transform.position, lastCheckedPosition);
+        float currentDistance = Vector3.Distance(gameObject.transform.position, _lastCheckedPosition);
 
-        if (!hasStopped && currentDistance <= moveThreshold)
+        if (!_hasStopped && currentDistance <= _moveThreshold)
         {
-            hasStopped = true;
-            timeWhenStopped = Time.time;
+            _hasStopped = true;
+            _timeWhenStopped = Time.time;
         }
-        else if (currentDistance > moveThreshold)
+        else if (currentDistance > _moveThreshold)
         {
-            hasStopped = false;
+            _hasStopped = false;
         }
 
-        lastCheckedPosition = gameObject.transform.position;
+        _lastCheckedPosition = gameObject.transform.position;
 
-        
-
-        if (hasStopped && (Time.time - timeWhenStopped) > idleDelay)
+        if (_hasStopped && (Time.time - _timeWhenStopped) > idleDelay)
         {
-
             return 1;
-
         }
         else
         {
@@ -261,35 +241,32 @@ public class IdleDelayConsideration : MonoBehaviour, IConsideration
     public float EvaluateMultiplier()
     {
         if (!_selfAiAgent.isGunLoaded)
-        {
-            timeWhenStopped = Time.time;
-        }
-        return 1;
+            _timeWhenStopped = Time.time;
 
+        return 1;
     }
 }
 
 
 public class ShouldFollowFormationConsideration : MonoBehaviour, IConsideration
 {
-
     float EvaluateRank() { return 1; }
 
     public float EvaluateMultiplier()
     {
         if (AIManager.Instance.currentFormation != Formation.NONE)
             return 1;
+
         return 0;
     }
 }
 
 public class PlayerHealthConsideration : MonoBehaviour, IConsideration
 {
+    [SerializeField] private float _criticalHealthThreshold = 0.2f; 
+    [SerializeField] private float _threatDistance          = 5f; 
+
     private PlayerAgent _player;
-    [SerializeField]
-    private float criticalHealthThreshold = 0.2f; 
-    [SerializeField]
-    private float threatDistance = 5f; 
 
     private void Start()
     {
@@ -298,28 +275,26 @@ public class PlayerHealthConsideration : MonoBehaviour, IConsideration
 
     public float EvaluateRank()
     {
-        float baseRank = 1.5f- 1.5f*( _player.CurrentHP / _player.MaxHP);
+        float baseRank = 1.5f- 1.5f*( _player.currentHP / _player.maxHP);
         return baseRank ;
     }
 
     public float EvaluateBonus()
     {
         // if player health is critically low
-        if (_player.CurrentHP / _player.MaxHP <= criticalHealthThreshold)
-        {
+        if (_player.currentHP / _player.maxHP <= _criticalHealthThreshold)
             return 1.2f; 
-        }
+
         return 0;
     }
 
     public float EvaluateMultiplier()
     {
         // if an enemy is too close to the AI, reduce weight slightly as AI is under threat
-        Collider[] threats = Physics.OverlapSphere(transform.position, threatDistance, 1 << LayerMask.NameToLayer("Enemy"));
+        Collider[] threats = Physics.OverlapSphere(transform.position, _threatDistance, 1 << LayerMask.NameToLayer("Enemy"));
         if (threats.Length > 0)
-        {
-            return 0.8f; 
-        }
+            return 0.8f;
+
         return 1;
     }
 }

@@ -1,35 +1,29 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Events;
-using System.Collections;
-using FSMMono;
 using System.Collections.Generic;
 
 public class SimpleController : MonoBehaviour
 {
-    [SerializeField]
-    float moveSpeed = 6f;
+    [SerializeField] private float _moveSpeed = 6f;
 
+    private PlayerAgent  _player;
+    private Camera       _viewCamera;
+    private Vector3      _velocity;
 
+    private Action<Vector3> _onMouseLeftClicked;
+    private Action<Vector3> _onMouseRightClicked;
 
-    PlayerAgent Player;
     public List<AIAgent> listAgent = new List<AIAgent>();
-
-	Camera viewCamera;
-	Vector3 velocity;
-
-    private Action<Vector3> OnMouseLeftClicked;
-    private Action<Vector3> OnMouseRightClicked;
 
     void Start ()
     {
-        Player = GetComponent<PlayerAgent>();
+        _player = GetComponent<PlayerAgent>();
         listAgent.AddRange(FindObjectsOfType<AIAgent>());
-        viewCamera = Camera.main;
+        _viewCamera = Camera.main;
 
-        OnMouseLeftClicked += Player.ShootToPosition;
+        _onMouseLeftClicked += _player.ShootToPosition;
 
-        OnMouseRightClicked += Player.NPCShootToPosition;
+        _onMouseRightClicked += _player.NPCShootToPosition;
     }
     void Update ()
     {
@@ -43,16 +37,16 @@ public class SimpleController : MonoBehaviour
             targetPos = newPos;
             targetPos.y += 0.1f;
 
-            Player.AimAtPosition(targetPos);
+            _player.AimAtPosition(targetPos);
         }
 
-        velocity = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical")).normalized * moveSpeed;
+        _velocity = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical")).normalized * _moveSpeed;
 
         if (Input.GetMouseButtonDown(0))
         {
-            OnMouseLeftClicked(targetPos);
+            _onMouseLeftClicked(targetPos);
 
-            if(!Player.GetComponent<PlayerAgent>().isAiCoverShooting() ) 
+            if(!_player.GetComponent<PlayerAgent>().isAiCoverShooting() ) 
             {
                 foreach (var agent in listAgent)
                     agent.ShootToPosition(targetPos);
@@ -61,13 +55,13 @@ public class SimpleController : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(1))
         {
-            OnMouseRightClicked(targetPos);
+            _onMouseRightClicked(targetPos);
             foreach (var agent in listAgent)
                 agent.CoverShot(targetPos);
         }
     }
 	void FixedUpdate()
     {
-        Player.MoveToward(velocity);
+        _player.MoveToward(_velocity);
 	}
 }

@@ -1,85 +1,79 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class TurretAgent : MonoBehaviour, IDamageable
 {
-    [SerializeField]
-    int MaxHP = 100;
-    [SerializeField]
-    float BulletPower = 1000f;
-    [SerializeField]
-    GameObject BulletPrefab;
+    [SerializeField] private int        _maxHP = 100;
+    [SerializeField] private float      _bulletPower = 1000f;
+    [SerializeField] private float      _shootFrequency = 1f;
+    [SerializeField] private GameObject _bulletPrefab;
 
-    [SerializeField]
-    float ShootFrequency = 1f;
+    private float     _nextShootDate = 0f;
+    private Transform _gunTransform;
 
-    float NextShootDate = 0f;
+    private int        _currentHP;
+    private bool       _isDead = false;
+    private GameObject _target = null;
 
-    Transform GunTransform;
-
-    bool IsDead = false;
-    public bool IsShooting = false;
-    int CurrentHP;
-
-    GameObject Target = null;
+    public bool isShooting = false;
 
     public void AddDamage(int amount)
     {
-        CurrentHP -= amount;
-        if (CurrentHP <= 0)
+        _currentHP -= amount;
+        if (_currentHP <= 0)
         {
-            IsDead = true;
-            CurrentHP = 0;
+            _isDead = true;
+            _currentHP = 0;
 
             gameObject.SetActive(false);
         }
     }
-    void ShootToPosition(Vector3 pos)
+
+    private void ShootToPosition(Vector3 pos)
     {
-        // look at target position
         transform.LookAt(pos + Vector3.up * transform.position.y);
 
-        // instantiate bullet
-        if (BulletPrefab)
+        if (_bulletPrefab)
         {
-            GameObject bullet = Instantiate<GameObject>(BulletPrefab, GunTransform.position + transform.forward * 0.5f, Quaternion.identity);
+            GameObject bullet = Instantiate<GameObject>(_bulletPrefab, _gunTransform.position + transform.forward * 0.5f, Quaternion.identity);
             Rigidbody rb = bullet.GetComponent<Rigidbody>();
-            rb.AddForce(transform.forward * BulletPower);
+            rb.AddForce(transform.forward * _bulletPower);
         }
     }
+
     void Start()
     {
-        GunTransform = transform.Find("Body/Gun");
-        if (GunTransform == null)
+        _gunTransform = transform.Find("Body/Gun");
+
+        if (_gunTransform == null)
             Debug.Log("could not find gun transform");
 
-        CurrentHP = MaxHP;
+        _currentHP = _maxHP;
     }
 
     void Update()
     {
-        if (Target && Time.time >= NextShootDate)
+        if (_target && Time.time >= _nextShootDate)
         {
-            NextShootDate = Time.time + ShootFrequency;
-            ShootToPosition(Target.transform.position);
+            _nextShootDate = Time.time + _shootFrequency;
+            ShootToPosition(_target.transform.position);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (Target == null && other.gameObject.layer == LayerMask.NameToLayer("Allies"))
+        if (_target == null && other.gameObject.layer == LayerMask.NameToLayer("Allies"))
         {
-            Target = other.gameObject;
-            IsShooting = true;
+            _target = other.gameObject;
+            isShooting = true;
         }
     }
+
     private void OnTriggerExit(Collider other)
     {
-        if (Target != null && other.gameObject == Target)
+        if (_target != null && other.gameObject == _target)
         {
-            Target = null;
-            IsShooting = false;
+            _target = null;
+            isShooting = false;
         }
     }
 }

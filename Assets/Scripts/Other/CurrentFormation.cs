@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,19 +12,15 @@ public enum Formation : int
 }
 public class CurrentFormation : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject _formationUI;
-    [SerializeField]
-    private Material _currentMat;
+    [SerializeField] private GameObject _formationUI;
+    [SerializeField] private Material   _currentMat;
+
     private RawImage _currentImage;
-
-
 
     // Start is called before the first frame update
     void Start()
     {
         _currentImage = _formationUI.transform.GetChild(0).GetComponent<RawImage>();
-        
     }
 
     // Update is called once per frame
@@ -62,16 +56,14 @@ public class CurrentFormation : MonoBehaviour
             ChangeFormation(Formation.FREEZE);
             return;
         }
-
     }
 
     void ChangeFormation(Formation formation)
     {
-        _currentImage.material = null;
-        _currentImage = _formationUI.transform.GetChild((int)formation).GetComponent<RawImage>();
-        _currentImage.material = _currentMat;
-        AIManager.Instance.currentFormation = formation;
-                    
+        _currentImage.material              = null;
+        _currentImage                       = _formationUI.transform.GetChild((int)formation).GetComponent<RawImage>();
+        _currentImage.material              = _currentMat;
+        AIManager.Instance.currentFormation = formation;        
     }
   
 }

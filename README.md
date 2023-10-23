@@ -17,7 +17,7 @@ Touches alphanumérique de 1 à 6 : Différentes formations
 
 **II.Formations**
 
-1)Logique principal de l’IA : Il suit le joueur, bloque les tirs ennemis/riposte, et le soigne selon sa vie.
+1) Logique principal de l’IA : Il suit le joueur, bloque les tirs ennemis/riposte, et le soigne selon sa vie.
 
 2) Formation tortue : Les IA forment un cercle autour du joueur afin de le protéger\.
 
